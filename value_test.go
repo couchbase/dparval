@@ -502,3 +502,75 @@ func TestJsonPointerInvalidJSON(t *testing.T) {
 		t.Errorf(`expected "value", got : %v`, string(val))
 	}
 }
+
+func TestDuplicateValueFromBytes(t *testing.T) {
+
+	val := NewValueFromBytes([]byte(`{"name":"marty","type":"contact","address":{"street":"sutton oaks"}}`))
+
+	val2 := val.Duplicate()
+	val2.SetPath("name", "bob")
+
+	name, err := val.Path("name")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	name2, err := val2.Path("name")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if reflect.DeepEqual(name, name2) {
+		t.Errorf("expected different names")
+	}
+
+	typ, err := val.Path("type")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	typ2, err := val2.Path("type")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if !reflect.DeepEqual(typ, typ2) {
+		t.Errorf("expected same types")
+	}
+
+}
+
+func TestDuplicateValueFromValue(t *testing.T) {
+
+	val := NewValue(map[string]interface{}{
+		"name": "marty",
+		"type": "contact",
+		"address": map[string]interface{}{
+			"street": "sutton oaks",
+		},
+	})
+
+	val2 := val.Duplicate()
+	val2.SetPath("name", "bob")
+
+	name, err := val.Path("name")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	name2, err := val2.Path("name")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if reflect.DeepEqual(name, name2) {
+		t.Errorf("expected different names %s and %s", name, name2)
+	}
+
+	typ, err := val.Path("type")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	typ2, err := val2.Path("type")
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if !reflect.DeepEqual(typ, typ2) {
+		t.Errorf("expected same types")
+	}
+
+}

@@ -46,6 +46,46 @@ type Value struct {
 	attachments map[string]interface{}
 }
 
+// Create a duplicate of this Value with minimal effort
+// Shallow copies are created of any ARRAY/OBJECT parsed values
+// Shallow copies are created of any attachments
+func (this *Value) Duplicate() *Value {
+	rv := Value{
+		raw:        this.raw,
+		parsedType: this.parsedType,
+	}
+
+	// map and array types are mutable
+	// create shallow (1-level) copy of parsedValue and attachments (if any)
+	if this.parsedValue != nil {
+		switch pval := this.parsedValue.(type) {
+		case map[string]*Value:
+			newParsedVal := make(map[string]*Value, len(pval))
+			for k, v := range pval {
+				newParsedVal[k] = v
+			}
+			rv.parsedValue = newParsedVal
+		case []*Value:
+			newParsedVal := make([]*Value, len(pval))
+			for i, v := range pval {
+				newParsedVal[i] = v
+			}
+			rv.parsedValue = newParsedVal
+		default:
+			rv.parsedValue = this.parsedValue
+		}
+	}
+
+	if this.attachments != nil {
+		rv.attachments = make(map[string]interface{}, len(this.attachments))
+		for k, v := range this.attachments {
+			rv.attachments[k] = v
+		}
+	}
+
+	return &rv
+}
+
 // Create a new Value object from an existing object.  MUST be one of the types supported by JSON.
 // If the argument passed is an existing *Value, that will be returned without creating a new object.
 func NewValue(val interface{}) *Value {
