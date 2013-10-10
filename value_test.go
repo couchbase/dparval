@@ -574,3 +574,13 @@ func TestDuplicateValueFromValue(t *testing.T) {
 	}
 
 }
+
+func TestArraySetIndexLongerThanExistingArray(t *testing.T) {
+	val := NewValueFromBytes([]byte(`["x"]`))
+	val.SetIndex(1, "gerald")
+
+	valval := val.Value()
+	if !reflect.DeepEqual(valval, []interface{}{"x", "gerald"}) {
+		t.Errorf("Expected array containing x and geral,d got %v", valval)
+	}
+}

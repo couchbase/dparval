@@ -314,7 +314,7 @@ func (this *Value) Value() interface{} {
 	if this.parsedValue != nil || this.parsedType == NULL {
 		rv := devalue(this.parsedValue)
 		if this.alias != nil {
-			overlayAlias(rv, this.alias)
+			rv = overlayAlias(rv, this.alias)
 		}
 		return rv
 	} else if this.parsedType != NOT_JSON {
@@ -327,7 +327,7 @@ func (this *Value) Value() interface{} {
 		if this.alias != nil {
 			// we cannot damange the original parsed value
 			rv := safeCopy(this.parsedValue)
-			overlayAlias(rv, this.alias)
+			rv = overlayAlias(rv, this.alias)
 			return rv
 		} else {
 			// otherwise its safe to return directly
@@ -352,7 +352,7 @@ func (this *Value) Bytes() []byte {
 		}
 		rv := safeCopy(this.parsedValue)
 		if this.alias != nil {
-			overlayAlias(rv, this.alias)
+			rv = overlayAlias(rv, this.alias)
 		}
 		// now we just need to serialize rv
 		var togo map[string]*json.RawMessage
@@ -394,7 +394,7 @@ func (this *Value) Bytes() []byte {
 		}
 		rv := safeCopy(this.parsedValue)
 		if this.alias != nil {
-			overlayAlias(rv, this.alias)
+			rv = overlayAlias(rv, this.alias)
 		}
 		// now we just need to serialize rv
 		var togo []*json.RawMessage
@@ -491,7 +491,7 @@ func safeCopy(base interface{}) interface{} {
 	}
 }
 
-func overlayAlias(base interface{}, alias map[string]*Value) {
+func overlayAlias(base interface{}, alias map[string]*Value) interface{} {
 	switch base := base.(type) {
 	case map[string]interface{}:
 		for k, v := range alias {
@@ -510,9 +510,18 @@ func overlayAlias(base interface{}, alias map[string]*Value) {
 				if v.Type() != NOT_JSON {
 					base[i] = v.Value()
 				}
+			} else if i >= 0 {
+				// need to make array larger to accomodate
+				oldbase := base
+				base = make([]interface{}, i+1)
+				copy(base, oldbase)
+				base[i] = v.Value()
 			}
 		}
+		return base
 	}
+
+	return base
 }
 
 func newNullValue() *Value {
