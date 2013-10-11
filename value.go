@@ -252,7 +252,7 @@ func (this *Value) SetIndex(index int, val interface{}) {
 	if this.parsedType == ARRAY && index >= 0 {
 		switch parsedValue := this.parsedValue.(type) {
 		case []*Value:
-			if index < len(parsedValue) {
+			if index >= 0 && index < len(parsedValue) {
 				// if we've already parsed the object, store it there
 				switch val := val.(type) {
 				case *Value:
@@ -260,6 +260,23 @@ func (this *Value) SetIndex(index int, val interface{}) {
 				default:
 					parsedValue[index] = NewValue(val)
 				}
+			} else if index >= 0 {
+				// need to expand it
+				oldParsedValue := parsedValue
+				parsedValue = make([]*Value, index+1)
+				copy(parsedValue, oldParsedValue)
+				// fill new areas with NULL
+				for i := len(oldParsedValue); i < index+1; i++ {
+					parsedValue[i] = NewValue(nil)
+				}
+				// if we've already parsed the object, store it there
+				switch val := val.(type) {
+				case *Value:
+					parsedValue[index] = val
+				default:
+					parsedValue[index] = NewValue(val)
+				}
+				this.parsedValue = parsedValue
 			}
 		case nil:
 			// if not store it in alias
@@ -515,6 +532,10 @@ func overlayAlias(base interface{}, alias map[string]*Value) interface{} {
 				oldbase := base
 				base = make([]interface{}, i+1)
 				copy(base, oldbase)
+				// fill new areas with NULL
+				for j := len(oldbase); j < i+1; j++ {
+					base[j] = NewValue(nil)
+				}
 				base[i] = v.Value()
 			}
 		}
