@@ -472,6 +472,37 @@ func BenchmarkLargeValue(b *testing.B) {
 	}
 }
 
+/* This benchmark contains a mix of Value creation of various data
+types, Value() dereferencing, and SetIndex() and SetPath(). */
+func BenchmarkProcessing(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		vals := make([]*Value, 1<<16)
+		for j := 0; j < len(vals); j++ {
+			val := make(map[string]interface{})
+
+			val["str"] = NewValue("string")
+			val["boolv"] = NewValue(true)
+			val["num"] = NewValue(1.0)
+			val["null"] = NewValue(nil)
+			arr := NewValue([]interface{}{"string", true, 1.0, nil})
+			arr.SetIndex(2, 1.0)
+			val["arr"] = arr
+			m := NewValue(map[string]interface{}{"string": "string", "bool": true, "num": 1.0, "null": nil})
+			m.SetPath("string", "string")
+			val["map"] = m
+
+			vals[j] = NewValue(val)
+
+			for k, v := range val {
+				actual := NewValue(v).Value()
+				if actual == nil {
+					val[k] = v
+				}
+			}
+		}
+	}
+}
+
 func BenchmarkLargeMap(b *testing.B) {
 	keys := []string{
 		"/tree/kids/0/kids/0/kids/0/kids/0/kids/0/name",
