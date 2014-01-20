@@ -475,8 +475,9 @@ func BenchmarkLargeValue(b *testing.B) {
 /* This benchmark contains a mix of Value creation of various data
 types, Value() dereferencing, and SetIndex() and SetPath(). */
 func BenchmarkProcessing(b *testing.B) {
+	vals := make([]*Value, 1<<16)
+
 	for i := 0; i < b.N; i++ {
-		vals := make([]*Value, 1<<16)
 		for j := 0; j < len(vals); j++ {
 			val := make(map[string]interface{})
 
