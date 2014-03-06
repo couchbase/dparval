@@ -18,7 +18,7 @@ import (
 func main() {
 
 	// read some JSON
-	bytes := []byte(`{"type":"test"}`)
+	bytes := []byte(`{"type":["test", "this"]}`)
 
 	// create a Value object
 	doc := dparval.NewValueFromBytes(bytes)
@@ -34,4 +34,10 @@ func main() {
 
 	// display the value
 	fmt.Printf("document type is %v\n", docTypeValue)
+
+	docType, err = docType.Index(1)
+	if err != nil {
+		panic("no index exists")
+	}
+	fmt.Printf("index 1 of type is %v\n", docType.Value())
 }
