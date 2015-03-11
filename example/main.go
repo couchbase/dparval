@@ -12,7 +12,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/couchbaselabs/dparval"
+	"github.com/couchbase/dparval"
 )
 
 func main() {
